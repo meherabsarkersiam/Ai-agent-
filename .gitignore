@@ -1,0 +1,22 @@
+**/node_modules/
+
+# Build outputs
+**/dist/
+**/build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+**/.env
+**/.env.*
+
+# Cache folders
+.vite/
+.cache/
+
+# OS/Editor files
+.DS_Store
+.vscode/
+.idea/
