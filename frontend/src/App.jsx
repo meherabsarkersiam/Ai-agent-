@@ -1,0 +1,40 @@
+import React, { useEffect } from 'react'
+import Authpage from './pages/Authpage'
+import { Route, Routes } from 'react-router-dom'
+import axios from '../src/config/axios.js'
+import { useDispatch } from 'react-redux'
+import { login, logout } from './redux/slices/authslice.js'
+
+const App = () => {
+const dispatch=useDispatch()
+  useEffect(() => {
+    const checkAuth=async()=>{
+   const response = await axios.get('/')
+   try {
+    if(response.data.user){
+       dispatch(login(response.data.user))
+       console.log(response.data.user);
+       
+    }else{
+      dispatch(logout())
+    }
+   
+   } catch (error) {
+    console.log(error);
+    
+   }
+}
+checkAuth()
+  }, [])
+  
+  return (
+    <div className='h-screen w-full bg-zinc-900'>
+      <Routes>
+        <Route path='/auth' element={<Authpage/>}/>
+      </Routes>
+      
+    </div>
+  )
+}
+
+export default App

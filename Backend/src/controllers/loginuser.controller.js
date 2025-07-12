@@ -17,7 +17,7 @@ export const login = async(req , res)=>{
             return res.status(400).json({ message: "Invalid password" })
         }
         const token = finduser.GenToken()
-       const user = finduser.toObject()
+        const user = finduser.toObject()
         delete user.password
         delete user.verifyToken
         delete user.__v

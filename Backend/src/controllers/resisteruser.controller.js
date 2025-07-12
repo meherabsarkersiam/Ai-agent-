@@ -22,13 +22,13 @@ export const register = async (req, res) => {
         })
        if (user) {
        const verifyToken = user.verifyToken
-        const user = user.toObject()
+        user.toObject()
         delete user.password
         delete user.verifyToken
         delete user.__v
         const token = user.GenToken()
-        res.cookie("Access_Token",token,)
-        res.cookie("verifyToken",verifyToken,)
+        res.cookie("Access_Token",token)
+        res.cookie("verifyToken",verifyToken)
         res.status(201).json({ message: "User registered successfully",user, token })
        }
         
