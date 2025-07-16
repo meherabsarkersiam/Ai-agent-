@@ -10,7 +10,10 @@ try {
     if(token){
 
         const verifyToken = jwt.verify(token,process.env.SECRET_KEY)
-        console.log(verifyToken);
+        if(!verifyToken){
+            req.user = null
+            return next()
+        }
         
         req.user = verifyToken
         
