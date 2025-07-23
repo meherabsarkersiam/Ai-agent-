@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import axios from '../config/axios.js'
+import { useNavigate } from 'react-router-dom'
 
 const Createproject = () => {
   const [projectName, setProjectName] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const nevigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -14,7 +16,7 @@ const Createproject = () => {
       const response = await axios.post('/project/create', { name: projectName })
       setSuccess('Project created successfully!')
       setProjectName('')
-      console.log(response);
+      nevigate('/project')
       
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create project')

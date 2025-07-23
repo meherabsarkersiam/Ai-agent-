@@ -2,14 +2,17 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 import { logout } from '../redux/slices/authslice.js'
 import axios from '../config/axios.js'
+import { useNavigate } from 'react-router-dom'
 
 const Logout = () => {
 const dispatch=  useDispatch()
+const nevigate = useNavigate()
   const handleLogout = async(e) => {
     e.preventDefault()
     const response = await axios.post('/api/auth/logout')
     dispatch(logout())
-    console.log(response);
+    window.location.reload()
+    nevigate('/')
     
   }
 

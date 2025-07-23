@@ -17,7 +17,8 @@ const Signup = ({setsignup}) => {
       setPassword('')
       setname('')
       seterr(response?.data?.message || 'something went wrong');
-      nevigate('/auth')
+      window.location.reload()
+      nevigate('/')
      })
      .catch((err)=>{
       seterr(err.response?.data?.message || 'something went wrong');

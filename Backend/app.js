@@ -2,6 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import conectDB from './src/config/mongo.config.js'
 import authrouter from './src/routes/auth.route.js'
+import profilerouter from './src/routes/profile.route.js'
 import cookieparser from 'cookie-parser'
 import { authmiddleware } from './src/middlewares/authmiddleware.js'
 import  projectrouter  from './src/routes/project.route.js'
@@ -27,6 +28,7 @@ app.use(authmiddleware)
 app.get('/',(req,res)=>{res.send({user: req.user})})
 app.use('/api/auth',authrouter)
 app.use('/project',projectrouter)
+app.use("/profile",profilerouter)
 
 app.listen(process.env.PORT,()=>{
     conectDB()

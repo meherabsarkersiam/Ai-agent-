@@ -93,9 +93,84 @@ export const adduser = async (req, res) => {
 }
 
 export const deleteproject = async (req, res) => {
+  try {
+    const projectid = req.params.id;
+    const deletorEmail = req.user?.email;
+
+    if (!deletorEmail) {
+      return res.status(401).json({ message: "Unauthorized: User email not found" });
+    }
+
+    const user = await User.findOne({ email: deletorEmail });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const userid = user._id;
+
+    // Check if the user is the creator of the project
+    const project = await Project.findById(projectid);
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    if (!project.creator.equals(userid)) {
+      return res.status(403).json({ message: "You are not authorized to delete this project" });
+    }
+
+    const deletedproject = await Project.findByIdAndDelete(projectid);
+
+    return res.status(200).json({
+      message: `${deletedproject?.Projectname || 'Project'} deleted successfully`,
+    });
+
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+
+export const projectdetails = async (req, res) => {
+    const user = req.user
+    if (!user) {
+        return res.json({ message: "User not found" });
+    }
     const projectid = req.params.id
-    const deletedproject = await Project.findByIdAndDelete(projectid)
-    res.send(deletedproject.Projectname + " deleted successfully")
+    if (!projectid) {
+        return res.json({ message: "something went wrong" });
+    }
+  try {
+    const curuser = await User.findOne({email:user.email})
+    if (!curuser) {
+      return res.json({ message: "User not found" });
+    }
+    const curuserid = curuser._id
+    
+    if (!curuserid) {
+      return res.json({ message: "User not added to project" });
+    }
+    const project = await Project.findById(projectid)
+    if (!project) {
+      return res.json({ message: "Project not found" });
+      
+    }
+    if (project) {
+      
+      const userdetails = project.users.filter((id)=>id.toString() !== curuserid.toString())
+     const modifiedproject = project.toObject()
+      delete modifiedproject.__v
+      delete modifiedproject.users
+     const cleanproject = {
+      ...modifiedproject,
+      userdetails
+     }
+      return res.json({ message: "Project details", cleanproject });
+    }
+    
+   
+  } catch (error) {
+    throw new Error("Failed to get project details")
+  }
 }
-
-

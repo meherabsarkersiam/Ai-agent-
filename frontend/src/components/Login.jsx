@@ -1,18 +1,21 @@
 import React, { useState } from 'react'
 import axios from '../config/axios.js'
+import { useNavigate } from 'react-router-dom'
 
 const Login = ({setsignup}) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [err, seterr] = useState('')
-
+ const nevigate = useNavigate()
   const handleSubmit = async (e) => {
     e.preventDefault()
     const response = await axios.post('/api/auth/login', { email, password })
     .then(()=>{
-     console.log(response.data)
+     
        setEmail('')
       setPassword('')
+      window.location.reload()
+      nevigate('/')
     })
     .catch((err)=>{
       seterr(err.response.data.message);
