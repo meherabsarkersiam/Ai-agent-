@@ -22,7 +22,7 @@ const dispatch=useDispatch()
    try {
     if(response.data.user){
        dispatch(login(response.data.user))
-       console.log(response.data.user);
+    
        
        
        
@@ -31,7 +31,7 @@ const dispatch=useDispatch()
     }
    
    } catch (error) {
-    console.log(error);
+alert(error)
     
    }
 }

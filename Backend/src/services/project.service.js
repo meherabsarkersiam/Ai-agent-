@@ -16,9 +16,9 @@ export const createProject = async ({Projectname,userId}) => {
 
 }
 
-export const addusertoproject = async({projectid , userid,users})=>{
+export const addusertoproject = async({projectid ,adduserid})=>{
 
-  if(!mongoose.Types.ObjectId.isValid(projectid) || ! mongoose.Types.ObjectId.isValid(userid) ){
+  if(!mongoose.Types.ObjectId.isValid(projectid) || !adduserid){
    throw new Error("Invalid project id")
   }
   try {
@@ -29,7 +29,7 @@ export const addusertoproject = async({projectid , userid,users})=>{
   },{
      $addToSet: {
             users: {
-                $each: users
+                $each: adduserid
             }
         }
   }

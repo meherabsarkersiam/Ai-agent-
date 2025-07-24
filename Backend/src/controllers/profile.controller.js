@@ -18,3 +18,17 @@ export const getprofile = async (req, res) => {
 
     res.send({ ...userObj, projects });
 }
+
+export const getid = async(req,res)=>{
+    try {
+        const useremail = req.user.email
+        const user = await User.findByEmail(useremail)
+        const userid = user._id
+        if (!userid) {
+           throw new Error("User not found")
+        }
+        res.send(userid)
+    } catch (error) {
+        res.status(500).json({status: false, message: 'unable to get user id'});
+    }
+}

@@ -13,6 +13,7 @@ const Project = () => {
           const response = await axios.get("/project/getprojects");
           
           
+          
           setresponse(response.data)
           
       }
@@ -31,7 +32,7 @@ const Project = () => {
           New Project <i className="ri-link"></i>
         </button>
       </div>
-      <div className="flex flex-col justify-center gap-4 border-1 border-red-100 p-5 rounded-xl">
+      <div className="flex flex-col justify-center gap-4 border-1 border-red-100 p-5 rounded-xl w-[40%]">
       {response?.map((project) => {
           return (
               <IndivualProject project={project} key={project._id}/>

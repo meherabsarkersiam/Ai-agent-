@@ -1,3 +1,4 @@
+import mongoose from "mongoose"
 import Project from "../models/projectmodel.js"
 import User from "../models/usermodel.js"
 import { addusertoproject, createProject } from "../services/project.service.js"
@@ -33,8 +34,6 @@ export const projectcontroller = async (req, res) => {
     }
 }
 
-
-
 export const getprojects = async (req, res) => {
     const user = req.user
     if (!user) {
@@ -57,40 +56,47 @@ export const getprojects = async (req, res) => {
     }
 }
 
-
 export const adduser = async (req, res) => {
-    const { projectid, users } = req.body
-    const currentuser = req.user
-    const currentuserdoc = await User.findOne({ email: currentuser.email })
-    const userid = currentuserdoc._id
-    if (!projectid || !users) {
-        return res.json({ message: "All fields are required" });
+    try {
+        const { adduserid } = req.body;
+        const projectid = req.params.id;
+        const currentuser = req.user;
+
+        if (!projectid || !adduserid || !Array.isArray(adduserid)) {
+           throw new Error("All fields are required and 'adduserid' must be an array" );
+        }
+
+        const currentuserdoc = await User.findOne({ email: currentuser.email });
+        if (!currentuserdoc) {
+            throw new Error( "Logged-in user not found" );
+        }
+
+        const userid = currentuserdoc._id;
+
+        const project = await Project.findOne({ _id: projectid, users: userid });
+        if (!project) {
+             throw new Error("Project not found or access denied" );
+        }
+
+        const alreadyAddedUsers = project.users.map(u => u.toString());
+        const duplicateUser = adduserid.find(id => alreadyAddedUsers.includes(id));
+
+        if (duplicateUser) {
+            throw new Error("One or more users are already added to the project" );
+        }
+
+        const adduserservice = await addusertoproject({ projectid, adduserid });
+
+        if (!adduserservice) {
+             throw new Error( "Failed to add user(s) to project" );
+        }
+
+        return res.status(200).json({ message: "User(s) added to project successfully", adduserservice });
+
+    } catch (error) {
+        return res.status(500).json({ message: error.message || "Something went wrong" });
     }
-    if (!userid) {
-        return res.json({ message: "logdin user not found" });
-    }
-    const project  = await Project.findOne({_id:projectid,users:userid}) 
-     const alreadyaddedusers = project.users
-    
-    if(!project){
-      throw new Error("Project not found")
-    }
-   const duplicateuser = alreadyaddedusers.find((user)=>{
-     return users.includes(user.toString())
-   })
-   if (duplicateuser) {
-   return res.json({ message: "User already added to project" });
-    
-   }
-    const adduserservice = await addusertoproject({ projectid, userid, users })
-    if (!adduserservice) {
-        return res.json({ message: "Failed to add user to project" });
-    }
-    else {
-        return res.json({ message: "User added to project successfully", adduserservice });
-        
-    }
-}
+};
 
 export const deleteproject = async (req, res) => {
   try {
@@ -129,8 +135,6 @@ export const deleteproject = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
-
 
 export const projectdetails = async (req, res) => {
     const user = req.user
@@ -174,3 +178,38 @@ export const projectdetails = async (req, res) => {
     throw new Error("Failed to get project details")
   }
 }
+
+export const deleteuser = async (req, res) => {
+  try {
+    const { deleteuserid } = req.body;
+    const projectid = req.params.id;
+    const reqsenderEmail = req.user?.email;
+
+    if (!deleteuserid) throw new Error("User ID to delete is missing.");
+    if (!reqsenderEmail) throw new Error("User not logged in.");
+    if (!projectid) throw new Error("Project ID is missing.");
+
+    // Check if requesting user exists
+    const currentUser = await User.findOne({ email: reqsenderEmail });
+    if (!currentUser) throw new Error("Requesting user not found.");
+
+    // Check if the user is the project creator
+    const project = await Project.findOne({ _id: projectid, creator: currentUser._id });
+    if (!project) throw new Error("You are not authorized to delete users from this project.");
+
+    // Delete user from project
+    const updatedProject = await Project.findByIdAndUpdate(
+      projectid,
+      { $pull: { users: new mongoose.Types.ObjectId(deleteuserid) } },
+      { new: true }
+    );
+
+    if (!updatedProject) throw new Error("Failed to remove user from project.");
+
+    return res.json({ message: "User removed from project successfully." });
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message || "Something went wrong."
+    });
+  }
+};

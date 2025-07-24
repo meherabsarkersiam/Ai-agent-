@@ -38,7 +38,7 @@ const Underproject = () => {
   }, [projectid]);
 
   if (loading) return <div>Loading...</div>;
-  console.log(data);
+ 
   if (!data) return <div>Project not founding</div>;
 
   return (
