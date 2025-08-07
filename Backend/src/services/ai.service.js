@@ -90,9 +90,10 @@ const model = genAI.getGenerativeModel({
        }
        
        </example>
-    
+
  IMPORTANT : don't use file name like routes/index.js
-       
+ IMPORTANT :send like this '{\n"text":"Hello, How can I help you today?"\n}'
+
        
     `
     

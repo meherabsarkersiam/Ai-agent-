@@ -14,6 +14,13 @@ const Underproject = () => {
   const [isusermenu, setisusermenu] = useState(false);
   const [massage, setmassage] = useState("");
   const [messages, setMessages] = useState([]); // <-- new state for messages
+  const [filetree, setfiletree] = useState(
+    {
+     
+    }
+  )
+  const [openedfiles, setopenedfiles] = useState([])
+  const [currentfile, setcurrentfile] = useState(null)
 
   const [data, setdata] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -55,13 +62,35 @@ const Underproject = () => {
     };
   }, [projectid]);
 
-  useEffect(() => {
-    receiveMessage("message", (data) => {
-      const inmassage = data.message;
+ useEffect(() => {
+  receiveMessage("message", (data) => {
+    
+    let msg = data.message;
+
+    if (data.sender === "AI") {
+      if (msg.startsWith("```json")) {
+        msg = msg.replace(/^```json\s*/, "").replace(/```$/, "");
+        
+      }
+    }
+
+    try {
+      const parsed = JSON.parse(msg);
+      console.log(parsed);
+      if(parsed?.fileTree) {
+        setfiletree(parsed?.fileTree)
+        console.log(parsed?.fileTree);
+        
+      }
+      const inmassage = parsed.text;
       appendmassage({ inmassage, sender: data.sender });
-    });
-    // eslint-disable-next-line
-  }, []);
+    } catch (err) {
+      console.error("Failed to parse JSON:", err);
+      appendmassage({ inmassage: msg, sender: data.sender }); // fallback for broken JSON
+    }
+  });
+}, []);
+
 
   if (loading) return <div>Loading...</div>;
 
@@ -182,7 +211,57 @@ const Underproject = () => {
             ></i>
           </div>
         </div>
-        <div className="project_section  w-full lg:max-w-[75%]  h-[70vh] bg-zinc-700"></div>
+        <div className="project_section  w-full lg:max-w-[75%]  h-[70vh] bg-zinc-700 flex">
+          <div className="w-[20%] h-full flex flex-col gap-2 p-2 bg-zinc-800">
+            {Object.keys(filetree).map((file,index) => {
+              return (
+                <div 
+                key={index}
+                onClick={(e)=>{
+                  setcurrentfile(file)
+                  setopenedfiles([ ...new Set([ ...openedfiles, file ]) ])
+                }}
+                className="flex gap-2 items-center bg-zinc-700 p-2 rounded cursor-pointer">
+                  <p className="text-lg text-white font-semibold">{file}</p>
+                </div>
+              );
+            })}
+            </div>
+            <div
+            className="w-[80%] relative h-full bg-zinc-600 overflow-y-auto">
+              <div className='w-[48%] fixed h-[8%]  flex bg-zinc-950  items-center '>
+                {openedfiles.map((file,index)=>{
+                  return(
+                    <div key={index} 
+                    onClick={()=>{setcurrentfile(file)}}
+                    className='w-fit h-fit flex justify-center items-center bg-zinc-700 p-2 mx-1 mt-1 rounded cursor-pointer'>
+                     
+                     <p className='text-lg text-white font-semibold '>{file}</p>
+                     <i
+                     onClick={()=>{
+                      setopenedfiles(openedfiles.filter((f)=>{
+                        return f!==file
+                      }))
+                      setcurrentfile(openedfiles[openedfiles.length-1])
+                     }}
+                      className="ri-close-line text-white text-xl ml-1 mt-1 cursor-pointer"></i>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className='w-full h-[90%] pt-[10%]  p-3'>
+             {filetree[currentfile]?.file?.contents ? (
+  <Markdown className="max-w-none prose prose-invert [&_pre]:overflow-x-auto [&_pre]:p-3 [&_pre]:rounded-md [&_pre]:bg-gray-900 [&_pre]:text-white [&_code]:text-sm">
+    {`\`\`\`js
+${filetree[currentfile].file.contents}
+\`\`\``}
+  </Markdown>
+) : (
+  <p className="text-white">No file selected or file is empty.</p>
+)}
+              </div>
+            </div>
+        </div>
       </div>
     </div>
   );
